@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <title>WebAudioFont Piano Demo（白鍵＋黒鍵）</title>
+
+    <!-- WebAudioFont本体 -->
+    <script src="https://cdn.jsdelivr.net/npm/webaudiofont@3.0.4/npm/dist/WebAudioFontPlayer.js"></script>
+    <!-- ピアノ音色（Aspirin piano） -->
+    <script src="https://surikov.github.io/webaudiofontdata/sound/0000_Aspirin_sf2_file.js"></script>
+
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <h1>移調ピアノ</h1>
+    <p>ボタン操作,キーボード操作で移調できます。<br>キーボード：ASDF JKL;</p>
+
+    <div class="piano">
+        <!-- 鍵盤部分 -->
+        <div class="piano-inner">
+            <!-- C4：C#4 を右側に配置 -->
+            <div class="white-key-wrap">
+                <button class="key white" data-midi="60">
+                    <span class="key-label">
+                        <span class="key-label-note">C</span>
+                        <span class="key-label-name">ド</span>
+                    </span>
+                </button>
+                <!-- C#4 -->
+                <button class="key black" data-midi="61">
+                    <span class="key-label">
+                        <span class="key-label-note">C#<br>D♭</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- D4：D#4 -->
+            <div class="white-key-wrap">
+                <button class="key white" data-midi="62">
+                    <span class="key-label">
+                        <span class="key-label-note">D</span>
+                        <span class="key-label-name">レ</span>
+                    </span>
+                </button>
+                <!-- D#4 -->
+                <button class="key black" data-midi="63">
+                    <span class="key-label">
+                        <span class="key-label-note">D#<br>E♭</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- E4：E-F の間には黒鍵なし -->
+            <div class="white-key-wrap">
+                <button class="key white" data-midi="64">
+                    <span class="key-label">
+                        <span class="key-label-note">E</span>
+                        <span class="key-label-name">ミ</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- F4：F#4 -->
+            <div class="white-key-wrap">
+                <button class="key white" data-midi="65">
+                    <span class="key-label">
+                        <span class="key-label-note">F</span>
+                        <span class="key-label-name">ﾌｧ</span>
+                    </span>
+                </button>
+                <!-- F#4 -->
+                <button class="key black" data-midi="66">
+                    <span class="key-label">
+                        <span class="key-label-note">F#<br>G♭</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- G4：G#4 -->
+            <div class="white-key-wrap">
+                <button class="key white" data-midi="67">
+                    <span class="key-label">
+                        <span class="key-label-note">G</span>
+                        <span class="key-label-name">ソ</span>
+                    </span>
+                </button>
+                <!-- G#4 -->
+                <button class="key black" data-midi="68">
+                    <span class="key-label">
+                        <span class="key-label-note">G#<br>A♭</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- A4：A#4 -->
+            <div class="white-key-wrap">
+                <button class="key white" data-midi="69">
+                    <span class="key-label">
+                        <span class="key-label-note">A</span>
+                        <span class="key-label-name">ラ</span>
+                    </span>
+                </button>
+                <!-- A#4 -->
+                <button class="key black" data-midi="70">
+                    <span class="key-label">
+                        <span class="key-label-note">A#<br>B♭</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- B4：B-C の間には黒鍵なし -->
+            <div class="white-key-wrap">
+                <button class="key white" data-midi="71">
+                    <span class="key-label">
+                        <span class="key-label-note">B</span>
+                        <span class="key-label-name">シ</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- C5：C#5 を右側に配置 -->
+            <div class="white-key-wrap">
+                <button class="key white" data-midi="72">
+                    <span class="key-label">
+                        <span class="key-label-note">C</span>
+                        <span class="key-label-name">ド</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+        <!-- オクターブダウンボタン -->
+        <button type="button" class="octave-btn left" id="octDownBtn">◀︎</button>
+        <!-- オクターブアップボタン -->
+        <button type="button" class="octave-btn right" id="octUpBtn">▶︎</button>
+    </div>
+
+    <div class="transpose-controls">
+        <span class="transpose-label">Key:</span>
+        <div class="transpose-buttons">
+            <button class="tbtn active" data-trans="0">C</button>
+            <button class="tbtn" data-trans="1">C#/D♭</button>
+            <button class="tbtn" data-trans="2">D</button>
+            <button class="tbtn" data-trans="3">D#/E♭</button>
+            <button class="tbtn" data-trans="4">E</button>
+            <button class="tbtn" data-trans="5">F</button>
+            <button class="tbtn" data-trans="6">F#/G♭</button>
+            <button class="tbtn" data-trans="7">G</button>
+            <button class="tbtn" data-trans="8">G#/A♭</button>
+            <button class="tbtn" data-trans="9">A</button>
+            <button class="tbtn" data-trans="10">A#/B♭</button>
+            <button class="tbtn" data-trans="11">B</button>
+        </div>
+    </div>
+
+    <div class="chord-section">
+        <div class="chord-buttons">
+            <button class="chord-btn" data-degree="0">Ⅰ</button>
+            <button class="chord-btn" data-degree="1">Ⅱ</button>
+            <button class="chord-btn" data-degree="2">Ⅲ</button>
+            <button class="chord-btn" data-degree="3">Ⅳ</button>
+            <button class="chord-btn" data-degree="4">Ⅴ</button>
+            <button class="chord-btn" data-degree="5">Ⅵ</button>
+            <button class="chord-btn" data-degree="6">Ⅶ</button>
+        </div>
+        <div class="chord-labels">
+            <span class="chord-label-caption">現在のKeyでのコード:</span>
+            <span id="chordLabelsActual">C / Dm / Em / F / G / Am / Bdim</span>
+        </div>
+    </div>
+
+    <div class="hint">
+        ※ ブラウザの仕様で、最初のクリック時に音が鳴るまで少しだけタイムラグが出ることがあります。
+    </div>
+
+    <script>
+        const AudioContextFunc = window.AudioContext || window.webkitAudioContext;
+
+        let audioCtx;
+        let player;
+        let warmedUp = false;
+
+        // 画面上にある鍵盤の「C基準」の MIDI
+        const NOTE_LIST = [
+            60, 61, 62, 63, 64, 65, 66,
+            67, 68, 69, 70, 71,
+            72, 73, 74, 75, 76, 77  // C5, C#5, D5, D#5, E5, F5
+        ];
+
+
+
+        // キーボード → 音階のマッピング（C基準のオフセット）
+        // asdf = ドレミﾌｧ
+        // jkl; = ソラシド
+        //
+        // 黒鍵:
+        //  w,e = C#,D#
+        //  i,o,p = F#,G#,A#
+        const KEY_TO_OFFSET = {
+            // 白鍵
+            a: 0,   // C
+            s: 2,   // D
+            d: 4,   // E
+            f: 5,   // F
+            j: 7,   // G
+            k: 9,   // A
+            l: 11,  // B
+            ";": 12, // C (1オクターブ上)
+
+            // 黒鍵
+            w: 1,   // C#
+            e: 3,   // D#
+            t: 6,   // F#
+            u: 6,   // F#
+            i: 8,   // G#
+            o: 10   // A#
+            // g, h は割り当てなし → 何も起きない
+        };
+
+        // スケールの度数（Cメジャーの I〜VII）のルート（C基準オフセット）
+        const DEGREE_ROOT_OFFSETS = [0, 2, 4, 5, 7, 9, 11];
+        // それぞれのコードの種類
+        const DEGREE_QUALITIES = ["maj", "min", "min", "maj", "maj", "min", "dim"];
+        const QUALITY_INTERVALS = {
+            maj: [0, 4, 7],
+            min: [0, 3, 7],
+            dim: [0, 3, 6],
+        };
+
+        // Keyごとのコード名（ラベル用）
+        const KEY_CHORD_LABELS = {
+            C: ["C", "Dm", "Em", "F", "G", "Am", "Bdim"],
+            D: ["D", "Em", "F#m", "G", "A", "Bm", "C#dim"],
+            E: ["E", "F#m", "G#m", "A", "B", "C#m", "D#dim"],
+            F: ["F", "Gm", "Am", "Bb", "C", "Dm", "Edim"],
+            G: ["G", "Am", "Bm", "C", "D", "Em", "F#dim"],
+            A: ["A", "Bm", "C#m", "D", "E", "F#m", "G#dim"],
+            B: ["B", "C#m", "D#m", "E", "F#", "G#m", "A#dim"],
+        };
+
+        const BASE_C4 = 60;        // C4
+        let octaveShift = 0;       // Ctrl / : で変えるオクターブシフト
+        let transposeSemis = 0;    // Keyボタンで変える移調量（半音）
+        let currentKeyName = "C";  // 今選択中のKey（ラベル表示用）
+
+        // すでに押しているキー（押しっぱなしで連打しないように）
+        const pressedKeySet = new Set();
+
+        // オクターブ変更共通処理
+        function changeOctave(delta) {
+            const newVal = Math.max(-2, Math.min(2, octaveShift + delta)); // -2〜+2 に制限
+            if (newVal === octaveShift) return;
+            octaveShift = newVal;
+            console.log("Octave:", octaveShift);
+            updateOctaveLabel();
+        }
+
+        function updateOctaveLabel() {
+            const el = document.getElementById("octaveStatus");
+            if (el) {
+                let text = "オクターブシフト：";
+                if (octaveShift === 0) {
+                    text += "0（基準）";
+                } else if (octaveShift > 0) {
+                    text += `+${octaveShift}`;
+                } else {
+                    text += `${octaveShift}`;
+                }
+                el.textContent = text;
+            }
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContextFunc();
+                player = new WebAudioFontPlayer();
+                console.log("AudioContext & WebAudioFontPlayer 初期化");
+            }
+        }
+
+        // すべての音を「ほぼ聞こえない音量」で一瞬鳴らしてウォームアップ
+        function warmupNotes() {
+            if (!audioCtx || !player || warmedUp) return;
+
+            const now = audioCtx.currentTime;
+            const duration = 0.01;
+            const volume = 0.0001;
+
+            NOTE_LIST.forEach((baseMidi) => {
+                player.queueWaveTable(
+                    audioCtx,
+                    audioCtx.destination,
+                    _tone_0000_Aspirin_sf2_file,
+                    now,
+                    baseMidi,
+                    duration,
+                    volume
+                );
+            });
+
+            warmedUp = true;
+            console.log("ウォームアップ完了");
+        }
+
+        // baseMidi: C基準のMIDI（例: C4=60, C#4=61,...）
+        function playNote(baseMidi) {
+            initAudio();
+
+            if (audioCtx.state === "suspended") {
+                audioCtx.resume();
+            }
+
+            const now = audioCtx.currentTime;
+            const duration = 1.5;
+            const volume = 0.5;
+
+            // 実際に鳴らすピッチ = base + 移調 + オクターブシフト
+            const actualMidi = baseMidi + transposeSemis + octaveShift * 12;
+
+            player.queueWaveTable(
+                audioCtx,
+                audioCtx.destination,
+                _tone_0000_Aspirin_sf2_file,
+                now,
+                actualMidi,
+                duration,
+                volume
+            );
+
+            // 画面上に対応する鍵盤を「baseMidi」で光らせる（見た目はC鍵盤のまま）
+            const keyEl = document.querySelector(`.key[data-midi="${baseMidi}"]`);
+            if (keyEl) {
+                keyEl.classList.add("active");
+                setTimeout(() => keyEl.classList.remove("active"), 150);
+            }
+        }
+
+        // 度数（0〜6）からコード（三和音）を鳴らす
+        function playChordByDegree(degreeIndex) {
+            const rootOffset = DEGREE_ROOT_OFFSETS[degreeIndex];
+            const quality = DEGREE_QUALITIES[degreeIndex];
+            const intervals = QUALITY_INTERVALS[quality] || QUALITY_INTERVALS.maj;
+
+            const rootBaseMidi = BASE_C4 + rootOffset;
+            intervals.forEach((iv) => {
+                const noteBaseMidi = rootBaseMidi + iv;
+                playNote(noteBaseMidi);
+            });
+        }
+
+        // 白鍵・黒鍵すべてにマウス / タッチイベント設定
+        function attachKeyEvents() {
+            document.querySelectorAll(".key").forEach((keyEl) => {
+                const baseMidi = Number(keyEl.dataset.midi);
+
+                const startPlay = (e) => {
+                    e.preventDefault();
+                    keyEl.classList.add("active");
+                    playNote(baseMidi);
+                };
+
+                const stopPlay = () => {
+                    keyEl.classList.remove("active");
+                };
+
+                keyEl.addEventListener("mousedown", startPlay);
+                keyEl.addEventListener("mouseup", stopPlay);
+                keyEl.addEventListener("mouseleave", stopPlay);
+
+                keyEl.addEventListener("touchstart", startPlay, { passive: false });
+                keyEl.addEventListener("touchend", stopPlay);
+                keyEl.addEventListener("touchcancel", stopPlay);
+            });
+        }
+
+        // 最初のユーザー操作で AudioContext を resume & 全音ウォームアップ
+        function setupFirstInteractionWarmup() {
+            const handler = async () => {
+                initAudio();
+                if (audioCtx.state === "suspended") {
+                    await audioCtx.resume();
+                }
+                warmupNotes();
+
+                window.removeEventListener("pointerdown", handler);
+            };
+
+            window.addEventListener("pointerdown", handler);
+        }
+
+        // キーボード操作の設定
+        function setupKeyboardControl() {
+            window.addEventListener("keydown", (e) => {
+                const key = e.key;
+
+                // Ctrl でオクターブ下げ
+                if (key === "Control") {
+                    if (!pressedKeySet.has("Control")) {
+                        changeOctave(-1);  // オクターブ下げ処理
+                        console.log("Octave:", octaveShift);
+                        pressedKeySet.add("Control");
+                    }
+                    return;
+                }
+
+                // : でオクターブ上げ（Shift + ;）
+                if (key === ":") {
+                    e.preventDefault();
+                    if (!pressedKeySet.has(":")) {
+                        changeOctave(1);  // オクターブ上げ処理
+                        console.log("Octave:", octaveShift);
+                        pressedKeySet.add(":");
+                    }
+                    return;
+                }
+
+                const lower = key.toLowerCase();
+                const lookupKey = (key === ";") ? ";" : lower;
+
+                if (!(lookupKey in KEY_TO_OFFSET)) {
+                    return; // 対象外のキー（g,hなど）は何もしない
+                }
+
+                if (pressedKeySet.has(lookupKey)) {
+                    return; // 押しっぱなしによる連打を防ぐ
+                }
+                pressedKeySet.add(lookupKey);
+
+                e.preventDefault();
+
+                const offset = KEY_TO_OFFSET[lookupKey];
+                const baseMidi = BASE_C4 + offset;  // C基準のMIDI
+                playNote(baseMidi);
+            });
+
+            window.addEventListener("keyup", (e) => {
+                const key = e.key;
+                const lower = key.toLowerCase();
+
+                pressedKeySet.delete(lower);
+                pressedKeySet.delete(key);   // "Control" や ":" など用
+                pressedKeySet.delete(";");   // 念のため
+            });
+        }
+
+        // オクターブボタンのセットアップ
+        function setupOctaveButtons() {
+    const downBtn = document.getElementById("octDownBtn");
+    const upBtn = document.getElementById("octUpBtn");
+
+    if (downBtn) {
+        downBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            changeOctave(-1);
+        });
+    }
+
+    if (upBtn) {
+        upBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            changeOctave(+1);
+        });
+    }
+}
+
+        // Keyラベル（コード名一覧）の更新
+        function updateChordLabelsForKey(keyName) {
+            const labels = KEY_CHORD_LABELS[keyName] || KEY_CHORD_LABELS["C"];
+            const el = document.getElementById("chordLabelsActual");
+            if (el) {
+                el.textContent = labels.join(" / ");
+            }
+        }
+
+        // Keyボタンのセットアップ
+        function setupTransposeButtons() {
+            const buttons = document.querySelectorAll(".tbtn");
+
+            function setTranspose(semi) {
+                transposeSemis = semi;
+
+                let newKeyName = "C";
+
+                buttons.forEach((btn) => {
+                    const v = Number(btn.dataset.trans);
+                    const isActive = v === semi;
+                    btn.classList.toggle("active", isActive);
+                    if (isActive) {
+                        newKeyName = btn.textContent.trim();
+                    }
+                });
+
+                currentKeyName = newKeyName;
+                updateChordLabelsForKey(currentKeyName);
+
+                console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName);
+            }
+
+            buttons.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const semi = Number(btn.dataset.trans);
+                    setTranspose(semi);
+                });
+            });
+
+            // 初期値: C (0)
+            setTranspose(0);
+        }
+
+        // コードボタンのセットアップ
+        function setupChordButtons() {
+            document.querySelectorAll(".chord-btn").forEach((btn) => {
+                const degree = Number(btn.dataset.degree);
+
+                btn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    playChordByDegree(degree);
+                });
+            });
+        }
+
+        // ページ読み込み時にセットアップ
+        window.addEventListener("DOMContentLoaded", () => {
+            initAudio();
+            attachKeyEvents();
+            setupFirstInteractionWarmup();
+            setupKeyboardControl();
+            setupTransposeButtons();
+            setupChordButtons();
+            setupOctaveButtons();
+            updateOctaveLabel();
+        });
+    </script>
+
+</body>
+
+<footer style="text-align: center; font-size: 0.8rem; color: #6b7280; margin: 16px 0;">
+    <div class="footer" id="octaveStatus">オクターブシフト：0（基準）</div>
+    <div>Powered by WebAudioFont</div>
+    <div class="footer"><a href="https://surikov.github.io/webaudiofont/" target="_blank"
+            style="color: #6b7280; text-decoration: underline;">https://surikov.github.io/webaudiofont/</a></div>
+    <div class="footer">キーボード操作ガイド： A -> ド | S -> レ | D -> ミ | F -> ファ | G -> ソ | H -> ラ | J -> シ | K -> ド | W -> ド# | E
+        -> レ# | T,U -> ファ# | I -> ソ# | O -> ラ#</div>
+    <div class="footer">キーボード操作ガイド： ctrl -> オクターブシフト(-1) | : -> オクターブシフト(+1)</div>
+</footer>
+
+</html>
