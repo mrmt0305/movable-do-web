@@ -240,6 +240,26 @@ button.key {
     filter: brightness(0.85);  /* ちょい暗め */
 }
 
+.scale-mode-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.mode-btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    border-radius: 9999px;
+    border: 1px solid #4b5563;
+    background: #111827;
+    color: #e5e7eb;
+    cursor: pointer;
+}
+
+.mode-btn.active {
+    background: #4b5563;
+    color: #f9fafb;
+}
+
 .hint {
   font-size: 0.8rem;
   margin-top: 8px;

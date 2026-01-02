@@ -205,6 +205,11 @@
     </div>
 
     <div class="transpose-controls">
+        <div class="scale-mode-buttons">
+            <button class="mode-btn active" data-mode="major" id="modeMajorBtn">メジャー</button>
+            <button class="mode-btn" data-mode="minor" id="modeMinorBtn">マイナー</button>
+        </div>
+
         <span class="transpose-label">Key:</span>
         <div class="transpose-buttons">
             <button class="tbtn active" data-trans="0">C</button>
@@ -248,6 +253,7 @@
         let audioCtx;
         let player;
         let warmedUp = false;
+        let scaleMode = "major"; // "major" または "minor"
 
         // 画面上にある鍵盤の「C基準」の MIDI
         const NOTE_LIST = [
@@ -338,6 +344,59 @@
             const table = useFlat ? NOTE_NAMES_FLAT : NOTE_NAMES_SHARP;
 
             return table[pitchClass];
+        }
+
+        // メジャー / マイナーに応じて、「キーボードで叩ける範囲」を変更してグレー付け
+        function updatePlayableRange() {
+            document.querySelectorAll(".key").forEach((keyEl) => {
+                const midi = Number(keyEl.dataset.midi);
+
+                let inside = false;
+                if (scaleMode === "major") {
+                    // メジャー：C4〜B4 を「内側」にする
+                    inside = (midi >= 60 && midi <= 71);
+                } else {
+                    // マイナー：A3〜A4 を「内側」にする（ラシドレミファソラ）
+                    // A3=57, B3=59, C4=60, D4=62, E4=64, F4=65, G4=67, A4=69
+                    inside = (midi >= 57 && midi <= 69);
+                }
+
+                // inside じゃないところは outside-range でグレーアウト
+                keyEl.classList.toggle("outside-range", !inside);
+            });
+        }
+
+        function setupScaleModeButtons() {
+            const majorBtn = document.getElementById("modeMajorBtn");
+            const minorBtn = document.getElementById("modeMinorBtn");
+
+            function setMode(mode) {
+                scaleMode = mode;
+
+                // activeクラス切り替え
+                majorBtn.classList.toggle("active", mode === "major");
+                minorBtn.classList.toggle("active", mode === "minor");
+
+                // モードに応じてグレー範囲更新
+                updatePlayableRange();
+            }
+
+            if (majorBtn) {
+                majorBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    setMode("major");
+                });
+            }
+
+            if (minorBtn) {
+                minorBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    setMode("minor");
+                });
+            }
+
+            // 初期状態：メジャー
+            setMode("major");
         }
 
         // 鍵盤ボタンの「C」「D」などの表記を、現在のKeyと移調量に合わせて更新
@@ -608,6 +667,7 @@
                 currentKeyName = newKeyName;
                 updateChordLabelsForTranspose(semi);
                 updateKeyLabelsForTranspose();
+                updatePlayableRange();
 
                 console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName);
             }
@@ -645,6 +705,7 @@
             setupChordButtons();
             setupOctaveButtons();
             updateOctaveLabel();
+            setupScaleModeButtons();
         });
     </script>
 
