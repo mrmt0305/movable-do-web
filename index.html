@@ -244,6 +244,49 @@
             11: ["B", "C#m", "D#m", "E", "F#", "G#m", "A#dim"],      // B
         };
 
+        // 12半音ぶんの表記（#系 / ♭系）
+        const NOTE_NAMES_SHARP = [
+            "C", "C#", "D", "D#", "E", "F",
+            "F#", "G", "G#", "A", "A#", "B"
+        ];
+
+        const NOTE_NAMES_FLAT = [
+            "C", "D♭", "D", "E♭", "E", "F",
+            "G♭", "G", "A♭", "A", "B♭", "B"
+        ];
+
+        // 現在のKey名から、#系か♭系かをざっくり決める
+        function shouldUseFlatNames(keyName) {
+            // Keyボタンが D♭, E♭, G♭, A♭, B♭ のように♭を含むなら♭表記優先
+            if (keyName.includes("♭")) return true;
+            return false;
+        }
+
+        // MIDI番号 + transposeSemis から表示用の音名を取得
+        function getNoteNameFromMidi(baseMidi, transposeSemi, keyName) {
+            let pitchClass = (baseMidi + transposeSemi) % 12;
+            if (pitchClass < 0) pitchClass += 12;
+
+            const useFlat = shouldUseFlatNames(keyName);
+            const table = useFlat ? NOTE_NAMES_FLAT : NOTE_NAMES_SHARP;
+
+            return table[pitchClass];
+        }
+
+        // 鍵盤ボタンの「C」「D」などの表記を、現在のKeyと移調量に合わせて更新
+        function updateKeyLabelsForTranspose() {
+            // currentKeyName（例: "C", "D♭"）と transposeSemis を使う
+            document.querySelectorAll(".key").forEach((keyEl) => {
+                const baseMidi = Number(keyEl.dataset.midi);
+                const labelSpan = keyEl.querySelector(".key-label-note");
+                if (!labelSpan) return;
+
+                const name = getNoteNameFromMidi(baseMidi, transposeSemis, currentKeyName);
+                labelSpan.textContent = name;
+            });
+        }
+
+
         const BASE_C4 = 60;        // C4
         let octaveShift = 0;       // Ctrl / : で変えるオクターブシフト
         let transposeSemis = 0;    // Keyボタンで変える移調量（半音）
@@ -478,7 +521,6 @@
             }
         }
 
-        // Keyボタンのセットアップ
         function setupTransposeButtons() {
             const buttons = document.querySelectorAll(".tbtn");
 
@@ -498,6 +540,7 @@
 
                 currentKeyName = newKeyName;
                 updateChordLabelsForTranspose(semi);
+                updateKeyLabelsForTranspose();
 
                 console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName);
             }
