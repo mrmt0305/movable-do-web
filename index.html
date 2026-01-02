@@ -31,7 +31,7 @@
                 <!-- C#4 -->
                 <button class="key black" data-midi="61">
                     <span class="key-label">
-                        <span class="key-label-note">C#<br>D♭</span>
+                        <span class="key-label-note">D♭</span>
                     </span>
                 </button>
             </div>
@@ -47,7 +47,7 @@
                 <!-- D#4 -->
                 <button class="key black" data-midi="63">
                     <span class="key-label">
-                        <span class="key-label-note">D#<br>E♭</span>
+                        <span class="key-label-note">E♭</span>
                     </span>
                 </button>
             </div>
@@ -73,7 +73,7 @@
                 <!-- F#4 -->
                 <button class="key black" data-midi="66">
                     <span class="key-label">
-                        <span class="key-label-note">F#<br>G♭</span>
+                        <span class="key-label-note">G♭</span>
                     </span>
                 </button>
             </div>
@@ -89,7 +89,7 @@
                 <!-- G#4 -->
                 <button class="key black" data-midi="68">
                     <span class="key-label">
-                        <span class="key-label-note">G#<br>A♭</span>
+                        <span class="key-label-note">A♭</span>
                     </span>
                 </button>
             </div>
@@ -105,7 +105,7 @@
                 <!-- A#4 -->
                 <button class="key black" data-midi="70">
                     <span class="key-label">
-                        <span class="key-label-note">A#<br>B♭</span>
+                        <span class="key-label-note">B♭</span>
                     </span>
                 </button>
             </div>
@@ -140,16 +140,16 @@
         <span class="transpose-label">Key:</span>
         <div class="transpose-buttons">
             <button class="tbtn active" data-trans="0">C</button>
-            <button class="tbtn" data-trans="1">C#/D♭</button>
+            <button class="tbtn" data-trans="1">D♭</button>
             <button class="tbtn" data-trans="2">D</button>
-            <button class="tbtn" data-trans="3">D#/E♭</button>
+            <button class="tbtn" data-trans="3">E♭</button>
             <button class="tbtn" data-trans="4">E</button>
             <button class="tbtn" data-trans="5">F</button>
-            <button class="tbtn" data-trans="6">F#/G♭</button>
+            <button class="tbtn" data-trans="6">G♭</button>
             <button class="tbtn" data-trans="7">G</button>
-            <button class="tbtn" data-trans="8">G#/A♭</button>
+            <button class="tbtn" data-trans="8">A♭</button>
             <button class="tbtn" data-trans="9">A</button>
-            <button class="tbtn" data-trans="10">A#/B♭</button>
+            <button class="tbtn" data-trans="10">B♭</button>
             <button class="tbtn" data-trans="11">B</button>
         </div>
     </div>
@@ -228,15 +228,20 @@
             dim: [0, 3, 6],
         };
 
-        // Keyごとのコード名（ラベル用）
-        const KEY_CHORD_LABELS = {
-            C: ["C", "Dm", "Em", "F", "G", "Am", "Bdim"],
-            D: ["D", "Em", "F#m", "G", "A", "Bm", "C#dim"],
-            E: ["E", "F#m", "G#m", "A", "B", "C#m", "D#dim"],
-            F: ["F", "Gm", "Am", "Bb", "C", "Dm", "Edim"],
-            G: ["G", "Am", "Bm", "C", "D", "Em", "F#dim"],
-            A: ["A", "Bm", "C#m", "D", "E", "F#m", "G#dim"],
-            B: ["B", "C#m", "D#m", "E", "F#", "G#m", "A#dim"],
+        // 12キーぶんのコード名（data-trans = 0〜11 に対応）
+        const CHORD_LABELS_BY_TRANSPOSE = {
+            0: ["C", "Dm", "Em", "F", "G", "Am", "Bdim"],       // C
+            1: ["Db", "Ebm", "Fm", "Gb", "Ab", "Bbm", "Cdim"],       // C#/Db → Dbメジャー表記
+            2: ["D", "Em", "F#m", "G", "A", "Bm", "C#dim"],      // D
+            3: ["Eb", "Fm", "Gm", "Ab", "Bb", "Cm", "Ddim"],        // D#/Eb → Ebメジャー表記
+            4: ["E", "F#m", "G#m", "A", "B", "C#m", "D#dim"],      // E
+            5: ["F", "Gm", "Am", "Bb", "C", "Dm", "Edim"],       // F
+            6: ["Gb", "Abm", "Bbm", "Cb", "Db", "Ebm", "Fdim"],       // F#/Gb → Gbメジャー表記
+            7: ["G", "Am", "Bm", "C", "D", "Em", "F#dim"],      // G
+            8: ["Ab", "Bbm", "Cm", "Db", "Eb", "Fm", "Gdim"],       // G#/Ab → Abメジャー表記
+            9: ["A", "Bm", "C#m", "D", "E", "F#m", "G#dim"],      // A
+            10: ["Bb", "Cm", "Dm", "Eb", "F", "Gm", "Adim"],       // A#/Bb → Bbメジャー表記
+            11: ["B", "C#m", "D#m", "E", "F#", "G#m", "A#dim"],      // B
         };
 
         const BASE_C4 = 60;        // C4
@@ -446,27 +451,27 @@
 
         // オクターブボタンのセットアップ
         function setupOctaveButtons() {
-    const downBtn = document.getElementById("octDownBtn");
-    const upBtn = document.getElementById("octUpBtn");
+            const downBtn = document.getElementById("octDownBtn");
+            const upBtn = document.getElementById("octUpBtn");
 
-    if (downBtn) {
-        downBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            changeOctave(-1);
-        });
-    }
+            if (downBtn) {
+                downBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    changeOctave(-1);
+                });
+            }
 
-    if (upBtn) {
-        upBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            changeOctave(+1);
-        });
-    }
-}
+            if (upBtn) {
+                upBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    changeOctave(+1);
+                });
+            }
+        }
 
         // Keyラベル（コード名一覧）の更新
-        function updateChordLabelsForKey(keyName) {
-            const labels = KEY_CHORD_LABELS[keyName] || KEY_CHORD_LABELS["C"];
+        function updateChordLabelsForTranspose(semi) {
+            const labels = CHORD_LABELS_BY_TRANSPOSE[semi] || CHORD_LABELS_BY_TRANSPOSE[0];
             const el = document.getElementById("chordLabelsActual");
             if (el) {
                 el.textContent = labels.join(" / ");
@@ -484,15 +489,15 @@
 
                 buttons.forEach((btn) => {
                     const v = Number(btn.dataset.trans);
-                    const isActive = v === semi;
+                    const isActive = (v === semi);
                     btn.classList.toggle("active", isActive);
                     if (isActive) {
-                        newKeyName = btn.textContent.trim();
+                        newKeyName = btn.textContent.trim();    // ボタンのテキストをキー名として使う
                     }
                 });
 
                 currentKeyName = newKeyName;
-                updateChordLabelsForKey(currentKeyName);
+                updateChordLabelsForTranspose(semi);
 
                 console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName);
             }
