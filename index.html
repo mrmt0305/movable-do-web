@@ -20,7 +20,33 @@
     <div class="piano">
         <!-- 鍵盤部分 -->
         <div class="piano-inner">
-            <!-- C4：C#4 を右側に配置 -->
+            <!-- A3：B♭3 -->
+            <div class="white-key-wrap">
+                <button button class="key white outside-range" data-midi="57">
+                    <span class="key-label">
+                        <span class="key-label-note">A</span>
+                        <span class="key-label-name">ラ</span>
+                    </span>
+                </button>
+                <!-- B♭3 -->
+                <button class="key black outside-range" data-midi="58">
+                    <span class="key-label">
+                        <span class="key-label-note">B♭</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- B3：B-C 間には黒鍵なし -->
+            <div class="white-key-wrap">
+                <button class="key white outside-range" data-midi="59">
+                    <span class="key-label">
+                        <span class="key-label-note">B</span>
+                        <span class="key-label-name">シ</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- C4：C#4 -->
             <div class="white-key-wrap">
                 <button class="key white" data-midi="60">
                     <span class="key-label">
@@ -52,7 +78,7 @@
                 </button>
             </div>
 
-            <!-- E4：E-F の間には黒鍵なし -->
+            <!-- E4：E-F 間には黒鍵なし -->
             <div class="white-key-wrap">
                 <button class="key white" data-midi="64">
                     <span class="key-label">
@@ -110,7 +136,7 @@
                 </button>
             </div>
 
-            <!-- B4：B-C の間には黒鍵なし -->
+            <!-- B4：B-C 間には黒鍵なし -->
             <div class="white-key-wrap">
                 <button class="key white" data-midi="71">
                     <span class="key-label">
@@ -120,12 +146,54 @@
                 </button>
             </div>
 
-            <!-- C5：C#5 を右側に配置 -->
+            <!-- C5：C#5 -->
             <div class="white-key-wrap">
-                <button class="key white" data-midi="72">
+                <button class="key white outside-range" data-midi="72">
                     <span class="key-label">
                         <span class="key-label-note">C</span>
                         <span class="key-label-name">ド</span>
+                    </span>
+                </button>
+                <!-- C#5 -->
+                <button class="key black outside-range" data-midi="73">
+                    <span class="key-label">
+                        <span class="key-label-note">D♭</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- D5：D#5 -->
+            <div class="white-key-wrap">
+                <button class="key white outside-range" data-midi="74">
+                    <span class="key-label">
+                        <span class="key-label-note">D</span>
+                        <span class="key-label-name">レ</span>
+                    </span>
+                </button>
+                <!-- D#5 -->
+                <button class="key black outside-range" data-midi="75">
+                    <span class="key-label">
+                        <span class="key-label-note">E♭</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- E5：E-F 間には黒鍵なし -->
+            <div class="white-key-wrap">
+                <button class="key white outside-range" data-midi="76">
+                    <span class="key-label">
+                        <span class="key-label-note">E</span>
+                        <span class="key-label-name">ミ</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- F5：F-G 間には黒鍵なし（ここで終わり） -->
+            <div class="white-key-wrap">
+                <button class="key white outside-range" data-midi="77">
+                    <span class="key-label">
+                        <span class="key-label-note">F</span>
+                        <span class="key-label-name">ﾌｧ</span>
                     </span>
                 </button>
             </div>
@@ -183,12 +251,11 @@
 
         // 画面上にある鍵盤の「C基準」の MIDI
         const NOTE_LIST = [
+            57, 58, 59,         // A3, Bb3, B3
             60, 61, 62, 63, 64, 65, 66,
             67, 68, 69, 70, 71,
-            72, 73, 74, 75, 76, 77  // C5, C#5, D5, D#5, E5, F5
+            72, 73, 74, 75, 76, 77  // C5〜F5
         ];
-
-
 
         // キーボード → 音階のマッピング（C基準のオフセット）
         // asdf = ドレミﾌｧ
