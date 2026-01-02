@@ -253,7 +253,6 @@
         let audioCtx;
         let player;
         let warmedUp = false;
-        let scaleMode = "major"; // "major" または "minor"
 
         // 画面上にある鍵盤の「C基準」の MIDI
         const NOTE_LIST = [
@@ -263,32 +262,40 @@
             72, 73, 74, 75, 76, 77  // C5〜F5
         ];
 
-        // キーボード → 音階のマッピング（C基準のオフセット）
-        // asdf = ドレミﾌｧ
-        // jkl; = ソラシド
-        //
-        // 黒鍵:
-        //  w,e = C#,D#
-        //  i,o,p = F#,G#,A#
-        const KEY_TO_OFFSET = {
-            // 白鍵
-            a: 0,   // C
-            s: 2,   // D
-            d: 4,   // E
-            f: 5,   // F
-            j: 7,   // G
-            k: 9,   // A
-            l: 11,  // B
-            ";": 12, // C (1オクターブ上)
+        // キーボード→鍵盤のマッピング
 
-            // 黒鍵
-            w: 1,   // C#
-            e: 3,   // D#
-            t: 6,   // F#
-            u: 6,   // F#
-            i: 8,   // G#
-            o: 10   // A#
-            // g, h は割り当てなし → 何も起きない
+        // メジャーモード時：ASDF JKL; → C4〜C5（ドレミファソラシド）
+        const KEY_TO_BASEMIDI_MAJOR = {
+            a: 60,  // C4 ド
+            s: 62,  // D4 レ
+            d: 64,  // E4 ミ
+            f: 65,  // F4 ﾌｧ
+            j: 67,  // G4 ソ
+            k: 69,  // A4 ラ
+            l: 71,  // B4 シ
+            ";": 72 // C5 ド
+        };
+
+        // マイナーモード時：ASDF JKL; → A3〜A4（ラシドレミファソラ）
+        const KEY_TO_BASEMIDI_MINOR = {
+            a: 57,  // A3 ラ
+            s: 59,  // B3 シ
+            d: 60,  // C4 ド
+            f: 62,  // D4 レ
+            j: 64,  // E4 ミ
+            k: 65,  // F4 ﾌｧ
+            l: 67,  // G4 ソ
+            ";": 69 // A4 ラ
+        };
+
+        // 黒鍵はモードに関係なく固定（クロマチック用）
+        const KEY_TO_BASEMIDI_BLACK = {
+            w: 61,  // C#4 / D♭4
+            e: 63,  // D#4 / E♭4
+            t: 66,  // F#4 / G♭4
+            u: 66,  // F#4 / G♭4（同じ音を別キーに）
+            i: 68,  // G#4 / A♭4
+            o: 70   // A#4 / B♭4
         };
 
         // スケールの度数（Cメジャーの I〜VII）のルート（C基準オフセット）
@@ -373,12 +380,11 @@
             function setMode(mode) {
                 scaleMode = mode;
 
-                // activeクラス切り替え
                 majorBtn.classList.toggle("active", mode === "major");
                 minorBtn.classList.toggle("active", mode === "minor");
 
-                // モードに応じてグレー範囲更新
-                updatePlayableRange();
+                // モードが変わったら transpose / ラベル / グレー範囲を全部更新
+                applyKeyAndMode();
             }
 
             if (majorBtn) {
@@ -395,7 +401,7 @@
                 });
             }
 
-            // 初期状態：メジャー
+            // 初期状態はメジャー
             setMode("major");
         }
 
@@ -412,11 +418,35 @@
             });
         }
 
-
         const BASE_C4 = 60;        // C4
         let octaveShift = 0;       // Ctrl / : で変えるオクターブシフト
         let transposeSemis = 0;    // Keyボタンで変える移調量（半音）
         let currentKeyName = "C";  // 今選択中のKey（ラベル表示用）
+
+        let scaleMode = "major";   // "major" / "minor"
+        let currentKeySemi = 0;    // Keyボタンの半音値（0=C, 1=D♭,...）
+
+        // モードに応じて、実際に使う transposeSemis を決める
+        function computeTransposeSemis(keySemi) {
+            if (scaleMode === "minor") {
+                // マイナーのときは「相対調のメジャー」にする → +3半音
+                // 例: Aマイナー(9) → Cメジャー(0)
+                return (keySemi + 3) % 12;
+            } else {
+                // メジャーのときはそのまま
+                return keySemi;
+            }
+        }
+
+        // Keyとモードが変わったときにまとめて反映する
+        function applyKeyAndMode() {
+            transposeSemis = computeTransposeSemis(currentKeySemi);
+            updateChordLabelsForTranspose(transposeSemis);
+            updateKeyLabelsForTranspose();
+            updatePlayableRange();
+            console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName, "Mode:", scaleMode);
+        }
+
 
         // すでに押しているキー（押しっぱなしで連打しないように）
         const pressedKeySet = new Set();
@@ -571,7 +601,7 @@
                 // Ctrl でオクターブ下げ
                 if (key === "Control") {
                     if (!pressedKeySet.has("Control")) {
-                        changeOctave(-1);  // オクターブ下げ処理
+                        changeOctave(-1);
                         console.log("Octave:", octaveShift);
                         pressedKeySet.add("Control");
                     }
@@ -582,7 +612,7 @@
                 if (key === ":") {
                     e.preventDefault();
                     if (!pressedKeySet.has(":")) {
-                        changeOctave(1);  // オクターブ上げ処理
+                        changeOctave(1);
                         console.log("Octave:", octaveShift);
                         pressedKeySet.add(":");
                     }
@@ -592,19 +622,37 @@
                 const lower = key.toLowerCase();
                 const lookupKey = (key === ";") ? ";" : lower;
 
-                if (!(lookupKey in KEY_TO_OFFSET)) {
-                    return; // 対象外のキー（g,hなど）は何もしない
-                }
-
+                // すでに押しているキーならスキップ（連打防止）
                 if (pressedKeySet.has(lookupKey)) {
-                    return; // 押しっぱなしによる連打を防ぐ
+                    return;
                 }
-                pressedKeySet.add(lookupKey);
 
+                let baseMidi = null;
+
+                // 黒鍵はモード共通
+                if (lookupKey in KEY_TO_BASEMIDI_BLACK) {
+                    baseMidi = KEY_TO_BASEMIDI_BLACK[lookupKey];
+                } else {
+                    // 白鍵はモードでマッピングを変える
+                    if (scaleMode === "minor") {
+                        if (lookupKey in KEY_TO_BASEMIDI_MINOR) {
+                            baseMidi = KEY_TO_BASEMIDI_MINOR[lookupKey];
+                        }
+                    } else {
+                        if (lookupKey in KEY_TO_BASEMIDI_MAJOR) {
+                            baseMidi = KEY_TO_BASEMIDI_MAJOR[lookupKey];
+                        }
+                    }
+                }
+
+                if (baseMidi == null) {
+                    // 対象外のキー（g,h 等）は何もしない
+                    return;
+                }
+
+                pressedKeySet.add(lookupKey);
                 e.preventDefault();
 
-                const offset = KEY_TO_OFFSET[lookupKey];
-                const baseMidi = BASE_C4 + offset;  // C基準のMIDI
                 playNote(baseMidi);
             });
 
@@ -613,8 +661,8 @@
                 const lower = key.toLowerCase();
 
                 pressedKeySet.delete(lower);
-                pressedKeySet.delete(key);   // "Control" や ":" など用
-                pressedKeySet.delete(";");   // 念のため
+                pressedKeySet.delete(key);
+                pressedKeySet.delete(";");
             });
         }
 
@@ -650,37 +698,30 @@
         function setupTransposeButtons() {
             const buttons = document.querySelectorAll(".tbtn");
 
-            function setTranspose(semi) {
-                transposeSemis = semi;
-
-                let newKeyName = "C";
-
+            function updateActiveButton(semi) {
                 buttons.forEach((btn) => {
                     const v = Number(btn.dataset.trans);
                     const isActive = (v === semi);
                     btn.classList.toggle("active", isActive);
                     if (isActive) {
-                        newKeyName = btn.textContent.trim();    // ボタンのテキストをキー名として使う
+                        currentKeyName = btn.textContent.trim();
                     }
                 });
-
-                currentKeyName = newKeyName;
-                updateChordLabelsForTranspose(semi);
-                updateKeyLabelsForTranspose();
-                updatePlayableRange();
-
-                console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName);
             }
 
             buttons.forEach((btn) => {
                 btn.addEventListener("click", () => {
                     const semi = Number(btn.dataset.trans);
-                    setTranspose(semi);
+                    currentKeySemi = semi;
+                    updateActiveButton(semi);
+                    applyKeyAndMode();
                 });
             });
 
             // 初期値: C (0)
-            setTranspose(0);
+            currentKeySemi = 0;
+            updateActiveButton(0);
+            applyKeyAndMode();
         }
 
         // コードボタンのセットアップ
