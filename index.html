@@ -298,30 +298,24 @@
             o: 70   // A#4 / B♭4
         };
 
-        // スケールの度数（Cメジャーの I〜VII）のルート（C基準オフセット）
-        const DEGREE_ROOT_OFFSETS = [0, 2, 4, 5, 7, 9, 11];
-        // それぞれのコードの種類
-        const DEGREE_QUALITIES = ["maj", "min", "min", "maj", "maj", "min", "dim"];
+        // メジャースケールの度数（Cメジャー基準での半音オフセット）
+        const DEGREE_SEMITONES_MAJOR = [0, 2, 4, 5, 7, 9, 11];
+        const DEGREE_QUALITIES_MAJOR = ["maj", "min", "min", "maj", "maj", "min", "dim"];
+
+        // ナチュラルマイナーの度数（ラ=ナチュラルマイナーの i〜VII）
+        const DEGREE_SEMITONES_MINOR = [0, 2, 3, 5, 7, 8, 10];
+        // i, ii°, III, iv, v, VI, VII
+        const DEGREE_QUALITIES_MINOR = ["min", "dim", "maj", "min", "min", "maj", "maj"];
+
+        // マイナー度数 → メジャースケール上の何度に相当するか（相対調の関係）
+        // i, ii°, III, iv, v, VI, VII
+        // ＝ Cメジャーで言うと VI, VII°, I, II, III, IV, V
+        const DEGREE_INDEX_MAP_MINOR = [5, 6, 0, 1, 2, 3, 4];
+
         const QUALITY_INTERVALS = {
             maj: [0, 4, 7],
             min: [0, 3, 7],
             dim: [0, 3, 6],
-        };
-
-        // 12キーぶんのコード名（data-trans = 0〜11 に対応）
-        const CHORD_LABELS_BY_TRANSPOSE = {
-            0: ["C", "Dm", "Em", "F", "G", "Am", "Bdim"],       // C
-            1: ["Db", "Ebm", "Fm", "Gb", "Ab", "Bbm", "Cdim"],       // C#/Db → Dbメジャー表記
-            2: ["D", "Em", "F#m", "G", "A", "Bm", "C#dim"],      // D
-            3: ["Eb", "Fm", "Gm", "Ab", "Bb", "Cm", "Ddim"],        // D#/Eb → Ebメジャー表記
-            4: ["E", "F#m", "G#m", "A", "B", "C#m", "D#dim"],      // E
-            5: ["F", "Gm", "Am", "Bb", "C", "Dm", "Edim"],       // F
-            6: ["Gb", "Abm", "Bbm", "Cb", "Db", "Ebm", "Fdim"],       // F#/Gb → Gbメジャー表記
-            7: ["G", "Am", "Bm", "C", "D", "Em", "F#dim"],      // G
-            8: ["Ab", "Bbm", "Cm", "Db", "Eb", "Fm", "Gdim"],       // G#/Ab → Abメジャー表記
-            9: ["A", "Bm", "C#m", "D", "E", "F#m", "G#dim"],      // A
-            10: ["Bb", "Cm", "Dm", "Eb", "F", "Gm", "Adim"],       // A#/Bb → Bbメジャー表記
-            11: ["B", "C#m", "D#m", "E", "F#", "G#m", "A#dim"],      // B
         };
 
         // 12半音ぶんの表記（#系 / ♭系）
@@ -418,6 +412,41 @@
             });
         }
 
+        // コードラベル（I〜VIIの表示）を、現在のKey & モードに合わせて更新
+        function updateChordLabels() {
+            const labels = [];
+
+            for (let degree = 0; degree < 7; degree++) {
+                let rootOffset;
+                let quality;
+
+                if (scaleMode === "minor") {
+                    const majorIndex = DEGREE_INDEX_MAP_MINOR[degree];
+                    rootOffset = DEGREE_SEMITONES_MAJOR[majorIndex];
+                    quality = DEGREE_QUALITIES_MINOR[degree];
+                } else {
+                    rootOffset = DEGREE_SEMITONES_MAJOR[degree];
+                    quality = DEGREE_QUALITIES_MAJOR[degree];
+                }
+
+                const rootBaseMidi = BASE_C4 + rootOffset;
+
+                // 実際に鳴るルート音の名前（♯/♭はKeyに応じて決める）
+                const rootName = getNoteNameFromMidi(rootBaseMidi, transposeSemis, currentKeyName);
+
+                let suffix = "";
+                if (quality === "min") suffix = "m";
+                else if (quality === "dim") suffix = "dim";
+
+                labels.push(rootName + suffix);
+            }
+
+            const el = document.getElementById("chordLabelsActual");
+            if (el) {
+                el.textContent = labels.join(" / ");
+            }
+        }
+
         const BASE_C4 = 60;        // C4
         let octaveShift = 0;       // Ctrl / : で変えるオクターブシフト
         let transposeSemis = 0;    // Keyボタンで変える移調量（半音）
@@ -441,12 +470,11 @@
         // Keyとモードが変わったときにまとめて反映する
         function applyKeyAndMode() {
             transposeSemis = computeTransposeSemis(currentKeySemi);
-            updateChordLabelsForTranspose(transposeSemis);
+            updateChordLabels();
             updateKeyLabelsForTranspose();
             updatePlayableRange();
             console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName, "Mode:", scaleMode);
         }
-
 
         // すでに押しているキー（押しっぱなしで連打しないように）
         const pressedKeySet = new Set();
@@ -542,11 +570,25 @@
 
         // 度数（0〜6）からコード（三和音）を鳴らす
         function playChordByDegree(degreeIndex) {
-            const rootOffset = DEGREE_ROOT_OFFSETS[degreeIndex];
-            const quality = DEGREE_QUALITIES[degreeIndex];
+            let rootOffset;
+            let quality;
+
+            if (scaleMode === "minor") {
+                // マイナー時：相対調のメジャースケール上での VI, VII°, I,... に対応させる
+                const majorIndex = DEGREE_INDEX_MAP_MINOR[degreeIndex];
+                rootOffset = DEGREE_SEMITONES_MAJOR[majorIndex];
+                quality = DEGREE_QUALITIES_MINOR[degreeIndex];
+            } else {
+                // メジャー時：普通に I〜VII
+                rootOffset = DEGREE_SEMITONES_MAJOR[degreeIndex];
+                quality = DEGREE_QUALITIES_MAJOR[degreeIndex];
+            }
+
             const intervals = QUALITY_INTERVALS[quality] || QUALITY_INTERVALS.maj;
 
+            // C4を基準に、Cメジャースケール上の度数からルートを決める
             const rootBaseMidi = BASE_C4 + rootOffset;
+
             intervals.forEach((iv) => {
                 const noteBaseMidi = rootBaseMidi + iv;
                 playNote(noteBaseMidi);
@@ -683,15 +725,6 @@
                     e.preventDefault();
                     changeOctave(+1);
                 });
-            }
-        }
-
-        // Keyラベル（コード名一覧）の更新
-        function updateChordLabelsForTranspose(semi) {
-            const labels = CHORD_LABELS_BY_TRANSPOSE[semi] || CHORD_LABELS_BY_TRANSPOSE[0];
-            const el = document.getElementById("chordLabelsActual");
-            if (el) {
-                el.textContent = labels.join(" / ");
             }
         }
 
