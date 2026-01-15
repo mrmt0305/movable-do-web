@@ -199,13 +199,15 @@ button.key {
   color: #e5e7eb;
 }
 
-.chord-buttons {
+.chord-buttons,
+.chord7-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.chord-btn {
+.chord-btn,
+.chord7-btn {
   padding: 5px 12px;
   border-radius: 9999px;
   border: 1px solid #4b5563;
@@ -218,7 +220,8 @@ button.key {
     box-shadow 0.1s ease;
 }
 
-.chord-btn:hover {
+.chord-btn:hover,
+.chord7-btn:hover {
   background: #111827;
   border-color: #6b7280;
   box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.5);
