@@ -313,10 +313,58 @@ button.key {
   text-align: left;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
 footer {
   margin-top: auto;
+}
+
+.chord-section {
+  margin-top: 16px;
+  width: min(90vw, 960px); /* ピアノに寄せるなら 960px がおすすめ */
+  background: #0f172a; /* .piano と同系色 */
+  border-radius: 8px;
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(75, 85, 99, 0.6); /* うっすら枠 */
+}
+
+.section-title {
+  width: 100%;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e5e7eb;
+  opacity: 0.95;
+  margin: 0 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(75, 85, 99, 0.6);
+}
+
+.chord-btn-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.chord-name {
+  font-size: 0.7rem;
+  color: #e5e7eb;
+  opacity: 0.45; /* 半透明 */
+  user-select: none;
+  pointer-events: none; /* クリック邪魔しない */
+  line-height: 1;
+}
+
+.chord-name-7 {
+  font-size: 0.7rem;
+  color: #e5e7eb;
+  opacity: 0.45;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
 }

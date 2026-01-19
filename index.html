@@ -228,31 +228,75 @@
     </div>
 
     <div class="chord-section">
+        <div class="section-title">コードを鳴らす</div>
         <!-- 三和音用ボタン -->
         <div class="chord-buttons">
-            <button class="chord-btn" data-degree="0">Ⅰ</button>
-            <button class="chord-btn" data-degree="1">Ⅱ</button>
-            <button class="chord-btn" data-degree="2">Ⅲ</button>
-            <button class="chord-btn" data-degree="3">Ⅳ</button>
-            <button class="chord-btn" data-degree="4">Ⅴ</button>
-            <button class="chord-btn" data-degree="5">Ⅵ</button>
-            <button class="chord-btn" data-degree="6">Ⅶ</button>
+            <div class="chord-btn-wrap">
+                <button class="chord-btn" data-degree="0">Ⅰ</button>
+                <div class="chord-name" data-degree="0">C</div>
+            </div>
+            <div class="chord-btn-wrap">
+                <button class="chord-btn" data-degree="1">Ⅱ</button>
+                <div class="chord-name" data-degree="1">Dm</div>
+            </div>
+            <div class="chord-btn-wrap">
+                <button class="chord-btn" data-degree="2">Ⅲ</button>
+                <div class="chord-name" data-degree="2">Em</div>
+            </div>
+            <div class="chord-btn-wrap">
+                <button class="chord-btn" data-degree="3">Ⅳ</button>
+                <div class="chord-name" data-degree="3">F</div>
+            </div>
+            <div class="chord-btn-wrap">
+                <button class="chord-btn" data-degree="4">Ⅴ</button>
+                <div class="chord-name" data-degree="4">G</div>
+            </div>
+            <div class="chord-btn-wrap">
+                <button class="chord-btn" data-degree="5">Ⅵ</button>
+                <div class="chord-name" data-degree="5">Am</div>
+            </div>
+            <div class="chord-btn-wrap">
+                <button class="chord-btn" data-degree="6">Ⅶ</button>
+                <div class="chord-name" data-degree="6">Bdim</div>
+            </div>
         </div>
 
         <!-- セブンス用ボタン -->
         <div class="chord7-buttons">
-            <button class="chord7-btn" data-degree="0">Ⅰmaj7</button>
-            <button class="chord7-btn" data-degree="1">Ⅱm7</button>
-            <button class="chord7-btn" data-degree="2">Ⅲm7</button>
-            <button class="chord7-btn" data-degree="3">Ⅳmaj7</button>
-            <button class="chord7-btn" data-degree="4">Ⅴ7</button>
-            <button class="chord7-btn" data-degree="5">Ⅵm7</button>
-            <button class="chord7-btn" data-degree="6">Ⅶm7♭5</button>
-        </div>
+            <div class="chord-btn-wrap">
+                <button class="chord7-btn" data-degree="0">Ⅰmaj7</button>
+                <div class="chord-name-7" data-degree="0">Cmaj7</div>
+            </div>
 
-        <div class="chord-labels">
-            <span class="chord-label-caption">現在のKeyでのコード:</span>
-            <span id="chordLabelsActual">C / Dm / Em / F / G / Am / Bdim</span>
+            <div class="chord-btn-wrap">
+                <button class="chord7-btn" data-degree="1">Ⅱm7</button>
+                <div class="chord-name-7" data-degree="1">Dm7</div>
+            </div>
+
+            <div class="chord-btn-wrap">
+                <button class="chord7-btn" data-degree="2">Ⅲm7</button>
+                <div class="chord-name-7" data-degree="2">Em7</div>
+            </div>
+
+            <div class="chord-btn-wrap">
+                <button class="chord7-btn" data-degree="3">Ⅳmaj7</button>
+                <div class="chord-name-7" data-degree="3">Fmaj7</div>
+            </div>
+
+            <div class="chord-btn-wrap">
+                <button class="chord7-btn" data-degree="4">Ⅴ7</button>
+                <div class="chord-name-7" data-degree="4">G7</div>
+            </div>
+
+            <div class="chord-btn-wrap">
+                <button class="chord7-btn" data-degree="5">Ⅵm7</button>
+                <div class="chord-name-7" data-degree="5">Am7</div>
+            </div>
+
+            <div class="chord-btn-wrap">
+                <button class="chord7-btn" data-degree="6">Ⅶm7♭5</button>
+                <div class="chord-name-7" data-degree="6">Bm7♭5</div>
+            </div>
         </div>
     </div>
 
@@ -445,11 +489,10 @@
             });
         }
 
-        // コードラベル（I〜VIIの表示）を、現在のKey & モードに合わせて更新
-        function updateChordLabels() {
-            const labels = [];
+        function updateChordNamesUnderButtons() {
+            document.querySelectorAll(".chord-name").forEach((el) => {
+                const degree = Number(el.dataset.degree);
 
-            for (let degree = 0; degree < 7; degree++) {
                 let rootOffset;
                 let quality;
 
@@ -463,21 +506,18 @@
                 }
 
                 const rootBaseMidi = BASE_C4 + rootOffset;
-
-                // 実際に鳴るルート音の名前（♯/♭はKeyに応じて決める）
-                const rootName = getNoteNameFromMidi(rootBaseMidi, transposeSemis, currentKeyName);
+                const rootName = getNoteNameFromMidi(
+                    rootBaseMidi,
+                    transposeSemis,
+                    currentKeyName
+                );
 
                 let suffix = "";
                 if (quality === "min") suffix = "m";
                 else if (quality === "dim") suffix = "dim";
 
-                labels.push(rootName + suffix);
-            }
-
-            const el = document.getElementById("chordLabelsActual");
-            if (el) {
-                el.textContent = labels.join(" / ");
-            }
+                el.textContent = rootName + suffix;
+            });
         }
 
         const BASE_C4 = 60;        // C4
@@ -503,10 +543,44 @@
         // Keyとモードが変わったときにまとめて反映する
         function applyKeyAndMode() {
             transposeSemis = computeTransposeSemis(currentKeySemi);
-            updateChordLabels();
+            updateChordNamesUnderButtons();
+            updateSeventhChordNamesUnderButtons();
             updateKeyLabelsForTranspose();
             updatePlayableRange();
             console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName, "Mode:", scaleMode);
+        }
+
+        function suffixFor7(quality7) {
+            switch (quality7) {
+                case "maj7": return "maj7";
+                case "min7": return "m7";
+                case "dom7": return "7";
+                case "halfdim7": return "m7♭5";
+                default: return "";
+            }
+        }
+
+        function updateSeventhChordNamesUnderButtons() {
+            document.querySelectorAll(".chord-name-7").forEach((el) => {
+                const degree = Number(el.dataset.degree);
+
+                let rootOffset;
+                let quality7;
+
+                if (scaleMode === "minor") {
+                    const majorIndex = DEGREE_INDEX_MAP_MINOR[degree];
+                    rootOffset = DEGREE_SEMITONES_MAJOR[majorIndex];
+                    quality7 = DEGREE_7_QUALITIES_MINOR[degree];
+                } else {
+                    rootOffset = DEGREE_SEMITONES_MAJOR[degree];
+                    quality7 = DEGREE_7_QUALITIES_MAJOR[degree];
+                }
+
+                const rootBaseMidi = BASE_C4 + rootOffset;
+                const rootName = getNoteNameFromMidi(rootBaseMidi, transposeSemis, currentKeyName);
+
+                el.textContent = rootName + suffixFor7(quality7);
+            });
         }
 
         // すでに押しているキー（押しっぱなしで連打しないように）
