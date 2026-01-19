@@ -15,7 +15,7 @@
 
 <body>
     <h1>移調ピアノ</h1>
-    <p>クリック or キーボード操作で移調できます。</p>
+    <p>クリック or キーボード操作で移調できます。<br>※ ブラウザの仕様で、最初のクリック時に音が鳴るまで少しだけタイムラグが出ることがあります。</p>
 
     <div class="piano">
         <!-- 鍵盤部分 -->
@@ -284,8 +284,91 @@
 
     </div>
 
-    <div class="hint">
-        ※ ブラウザの仕様で、最初のクリック時に音が鳴るまで少しだけタイムラグが出ることがあります。
+    <div class="ref-piano">
+        <div class="ref-piano-title">参照用ピアノ（固定表記）</div>
+
+        <div class="ref-piano-inner">
+            <!-- A3 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="57"><span>A3</span></div>
+                <!-- Bb3 -->
+                <div class="ref-key ref-black" data-midi="58"><span>A#3<br>B♭3</span></div>
+            </div>
+
+            <!-- B3 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="59"><span>B3</span></div>
+            </div>
+
+            <!-- C4 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="60"><span>C4</span></div>
+                <!-- C#4 -->
+                <div class="ref-key ref-black" data-midi="61"><span>C#4<br>D♭4</span></div>
+            </div>
+
+            <!-- D4 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="62"><span>D4</span></div>
+                <!-- D#4 -->
+                <div class="ref-key ref-black" data-midi="63"><span>D#4<br>E♭4</span></div>
+            </div>
+
+            <!-- E4 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="64"><span>E4</span></div>
+            </div>
+
+            <!-- F4 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="65"><span>F4</span></div>
+                <!-- F#4 -->
+                <div class="ref-key ref-black" data-midi="66"><span>F#4<br>G♭4</span></div>
+            </div>
+
+            <!-- G4 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="67"><span>G4</span></div>
+                <!-- G#4 -->
+                <div class="ref-key ref-black" data-midi="68"><span>G#4<br>A♭4</span></div>
+            </div>
+
+            <!-- A4 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="69"><span>A4</span></div>
+                <!-- A#4 -->
+                <div class="ref-key ref-black" data-midi="70"><span>A#4<br>B♭4</span></div>
+            </div>
+
+            <!-- B4 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="71"><span>B4</span></div>
+            </div>
+
+            <!-- C5 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="72"><span>C5</span></div>
+                <!-- C#5 -->
+                <div class="ref-key ref-black" data-midi="73"><span>C#5<br>D♭5</span></div>
+            </div>
+
+            <!-- D5 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="74"><span>D5</span></div>
+                <!-- D#5 -->
+                <div class="ref-key ref-black" data-midi="75"><span>D#5<br>E♭5</span></div>
+            </div>
+
+            <!-- E5 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="76"><span>E5</span></div>
+            </div>
+
+            <!-- F5 -->
+            <div class="ref-white-key-wrap">
+                <div class="ref-key ref-white" data-midi="77"><span>F5</span></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -562,6 +645,7 @@
             updateDegreeButtonTexts();
             updateKeyLabelsForTranspose();
             updatePlayableRange();
+            clearReferenceHold();
             console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName, "Mode:", scaleMode);
         }
 
@@ -705,6 +789,7 @@
 
             // 実際に鳴らすピッチ = base + 移調 + オクターブシフト
             const actualMidi = baseMidi + transposeSemis + octaveShift * 12;
+            flashReferenceKey(actualMidi);
 
             player.queueWaveTable(
                 audioCtx,
@@ -724,31 +809,37 @@
             }
         }
 
+        // baseMidi に対して、transposeSemis と octaveShift を加えた実際のMIDIを返す
+        function toActualMidi(baseMidi) {
+            return baseMidi + transposeSemis + octaveShift * 12;
+        }
+
         // 度数（0〜6）からコード（三和音）を鳴らす
         function playChordByDegree(degreeIndex) {
             let rootOffset;
             let quality;
 
             if (scaleMode === "minor") {
-                // マイナー時：相対調のメジャースケール上での VI, VII°, I,... に対応させる
                 const majorIndex = DEGREE_INDEX_MAP_MINOR[degreeIndex];
                 rootOffset = DEGREE_SEMITONES_MAJOR[majorIndex];
                 quality = DEGREE_QUALITIES_MINOR[degreeIndex];
             } else {
-                // メジャー時：普通に I〜VII
                 rootOffset = DEGREE_SEMITONES_MAJOR[degreeIndex];
                 quality = DEGREE_QUALITIES_MAJOR[degreeIndex];
             }
 
             const intervals = QUALITY_INTERVALS[quality] || QUALITY_INTERVALS.maj;
-
-            // C4を基準に、Cメジャースケール上の度数からルートを決める
             const rootBaseMidi = BASE_C4 + rootOffset;
 
-            intervals.forEach((iv) => {
-                const noteBaseMidi = rootBaseMidi + iv;
-                playNote(noteBaseMidi);
-            });
+            // ① 構成音（base）を作る
+            const baseMidis = intervals.map((iv) => rootBaseMidi + iv);
+
+            // ② 実際の音程（actual）に変換して “保持点灯”
+            const actualMidis = baseMidis.map(toActualMidi);
+            setReferenceHold(actualMidis);
+
+            // ③ 音を鳴らす（既存の playNote を利用）
+            baseMidis.forEach((m) => playNote(m));
         }
 
         // 度数（0〜6）からセブンスコードを鳴らす
@@ -757,12 +848,10 @@
             let quality7;
 
             if (scaleMode === "minor") {
-                // ナチュラルマイナー：相対調のメジャー上の VI, VII°, I,... に対応させる
                 const majorIndex = DEGREE_INDEX_MAP_MINOR[degreeIndex];
                 rootOffset = DEGREE_SEMITONES_MAJOR[majorIndex];
                 quality7 = DEGREE_7_QUALITIES_MINOR[degreeIndex];
             } else {
-                // メジャー：普通に I〜VII
                 rootOffset = DEGREE_SEMITONES_MAJOR[degreeIndex];
                 quality7 = DEGREE_7_QUALITIES_MAJOR[degreeIndex];
             }
@@ -770,10 +859,12 @@
             const intervals = QUALITY_7_INTERVALS[quality7] || QUALITY_7_INTERVALS.maj7;
             const rootBaseMidi = BASE_C4 + rootOffset;
 
-            intervals.forEach((iv) => {
-                const noteBaseMidi = rootBaseMidi + iv;
-                playNote(noteBaseMidi);
-            });
+            const baseMidis = intervals.map((iv) => rootBaseMidi + iv);
+
+            const actualMidis = baseMidis.map(toActualMidi);
+            setReferenceHold(actualMidis);
+
+            baseMidis.forEach((m) => playNote(m));
         }
 
         // 白鍵・黒鍵すべてにマウス / タッチイベント設定
@@ -960,6 +1051,33 @@
                     e.preventDefault();
                     playSeventhChordByDegree(degree);
                 });
+            });
+        }
+
+        // 参照用ピアノ鍵盤を一瞬光らせる
+        function flashReferenceKey(actualMidi) {
+            const el = document.querySelector(`.ref-key[data-midi="${actualMidi}"]`);
+            if (!el) return;
+            el.classList.add("ref-active");
+            setTimeout(() => el.classList.remove("ref-active"), 180);
+        }
+
+        // 参照用ピアノの保持表示をクリア
+        function clearReferenceHold() {
+            document.querySelectorAll(".ref-key.ref-held").forEach((el) => {
+                el.classList.remove("ref-held");
+            });
+        }
+
+        function setReferenceHold(actualMidis) {
+            // 前回の保持を消す
+            clearReferenceHold();
+
+            // 重複を除外してから保持点灯
+            const unique = Array.from(new Set(actualMidis));
+            unique.forEach((midi) => {
+                const el = document.querySelector(`.ref-key[data-midi="${midi}"]`);
+                if (el) el.classList.add("ref-held");
             });
         }
 
