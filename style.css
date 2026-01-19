@@ -312,3 +312,11 @@ button.key {
   color: #6b7280;
   text-align: left;
 }
+
+html, body {
+  height: 100%;
+}
+
+footer {
+  margin-top: auto;
+}
