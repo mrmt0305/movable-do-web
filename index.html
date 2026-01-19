@@ -358,6 +358,17 @@
         const DEGREE_SEMITONES_MAJOR = [0, 2, 4, 5, 7, 9, 11];
         const DEGREE_SEMITONES_MINOR = [0, 2, 3, 5, 7, 8, 10];
 
+        // 表示用（メジャー）
+        const DEGREE_TEXT_MAJOR = ["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ", "Ⅵ", "Ⅶ"];
+        const DEGREE7_TEXT_MAJOR = ["Ⅰmaj7", "Ⅱm7", "Ⅲm7", "Ⅳmaj7", "Ⅴ7", "Ⅵm7", "Ⅶm7♭5"];
+
+        // 表示用（マイナー）※ナチュラルマイナー想定
+        // i, ii°, III, iv, v, VI, VII
+        const DEGREE_TEXT_MINOR = ["i", "ii°", "III", "iv", "v", "VI", "VII"];
+        // セブンス側
+        // i7, iiø7, IIImaj7, iv7, v7, VImaj7, VII7
+        const DEGREE7_TEXT_MINOR = ["i7", "iiø7", "IIImaj7", "iv7", "v7", "VImaj7", "VII7"];
+
         const DEGREE_QUALITIES_MAJOR = ["maj", "min", "min", "maj", "maj", "min", "dim"];
         const DEGREE_QUALITIES_MINOR = ["min", "dim", "maj", "min", "min", "maj", "maj"];
         const DEGREE_7_QUALITIES_MAJOR = [
@@ -444,6 +455,7 @@
             });
         }
 
+        // メジャー / マイナー切り替えボタンのセットアップ
         function setupScaleModeButtons() {
             const majorBtn = document.getElementById("modeMajorBtn");
             const minorBtn = document.getElementById("modeMinorBtn");
@@ -489,6 +501,7 @@
             });
         }
 
+        // コードボタン下のコード名ラベルを更新
         function updateChordNamesUnderButtons() {
             document.querySelectorAll(".chord-name").forEach((el) => {
                 const degree = Number(el.dataset.degree);
@@ -528,6 +541,22 @@
         let scaleMode = "major";   // "major" / "minor"
         let currentKeySemi = 0;    // Keyボタンの半音値（0=C, 1=D♭,...）
 
+        // コードボタンのテキストをモードに応じて更新
+        function updateDegreeButtonTexts() {
+            const triTexts = (scaleMode === "minor") ? DEGREE_TEXT_MINOR : DEGREE_TEXT_MAJOR;
+            const sevTexts = (scaleMode === "minor") ? DEGREE7_TEXT_MINOR : DEGREE7_TEXT_MAJOR;
+
+            document.querySelectorAll(".chord-btn").forEach((btn) => {
+                const d = Number(btn.dataset.degree);
+                if (!Number.isNaN(d) && triTexts[d]) btn.textContent = triTexts[d];
+            });
+
+            document.querySelectorAll(".chord7-btn").forEach((btn) => {
+                const d = Number(btn.dataset.degree);
+                if (!Number.isNaN(d) && sevTexts[d]) btn.textContent = sevTexts[d];
+            });
+        }
+
         // モードに応じて、実際に使う transposeSemis を決める
         function computeTransposeSemis(keySemi) {
             if (scaleMode === "minor") {
@@ -545,11 +574,13 @@
             transposeSemis = computeTransposeSemis(currentKeySemi);
             updateChordNamesUnderButtons();
             updateSeventhChordNamesUnderButtons();
+            updateDegreeButtonTexts();
             updateKeyLabelsForTranspose();
             updatePlayableRange();
             console.log("Transpose semis:", transposeSemis, "Key:", currentKeyName, "Mode:", scaleMode);
         }
 
+        // セブンスコードのサフィックス取得
         function suffixFor7(quality7) {
             switch (quality7) {
                 case "maj7": return "maj7";
@@ -560,6 +591,7 @@
             }
         }
 
+        // セブンスコードボタン下のコード名ラベルを更新
         function updateSeventhChordNamesUnderButtons() {
             document.querySelectorAll(".chord-name-7").forEach((el) => {
                 const degree = Number(el.dataset.degree);
@@ -595,6 +627,7 @@
             updateOctaveLabel();
         }
 
+        // オクターブ表示ラベル更新
         function updateOctaveLabel() {
             const el = document.getElementById("octaveStatus");
             if (el) {
@@ -860,6 +893,7 @@
             }
         }
 
+        // 移調ボタンのセットアップ
         function setupTransposeButtons() {
             const buttons = document.querySelectorAll(".tbtn");
 
